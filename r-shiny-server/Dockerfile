@@ -1,16 +1,22 @@
-FROM eddelbuettel/ubuntu-r-base
+FROM rocker/r-base
 
 MAINTAINER Winston Chang "winston@rstudio.com"
 
 RUN update-locale
 
 RUN apt-get install -y \
+    sudo \
     gdebi-core \
     pandoc \
     pandoc-citeproc \
     libcurl4-gnutls-dev \
     libcairo2-dev \
     libxt-dev
+
+# Download and install libssl 0.9.8
+RUN wget http://ftp.us.debian.org/debian/pool/main/o/openssl/libssl0.9.8_0.9.8o-4squeeze14_amd64.deb && \
+    dpkg -i libssl0.9.8_0.9.8o-4squeeze14_amd64.deb && \
+    rm -f libssl0.9.8_0.9.8o-4squeeze14_amd64.deb
 
 # Download and install shiny server
 RUN wget https://s3.amazonaws.com/rstudio-shiny-server-os-build/ubuntu-12.04/x86_64/VERSION -O "version.txt" && \
