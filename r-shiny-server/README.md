@@ -1,7 +1,7 @@
 Docker for Shiny Server
 =======================
 
-This is a Dockerfile for Shiny Server on Ubuntu 14.04.
+This is a Dockerfile for Shiny Server on Debian "testing". It is based on the rocker/r-base image.
 
 
 ## Usage:
