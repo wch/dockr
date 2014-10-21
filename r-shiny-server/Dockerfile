@@ -2,8 +2,6 @@ FROM rocker/r-base
 
 MAINTAINER Winston Chang "winston@rstudio.com"
 
-RUN update-locale
-
 RUN apt-get install -y \
     sudo \
     gdebi-core \
