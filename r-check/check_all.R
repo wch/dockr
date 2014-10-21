@@ -93,7 +93,8 @@ check_all <- function(repo, ref = "master") {
 
   # Run check
   check_dir <- tempdir()
-  check_res <- check(pkg$path, cleanup = FALSE, check_dir = check_dir)
+  check_res <- check(pkg$path, cleanup = FALSE, check_dir = check_dir,
+                     document = FALSE)
 
   if (!isTRUE(check_res)) {
     return(FALSE)
