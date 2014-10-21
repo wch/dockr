@@ -14,4 +14,4 @@ RUN echo "\nalias R='R --no-save --no-restore-data --quiet'" >> $HOME/.bashrc &&
     mkdir -p $HOME/R-lib/3.1 $HOME/R-lib/3.2
 
 # Can't use $HOME with COPY for some reason
-COPY Rprofile /root/.Rprofile
+COPY check_all.R /root/check_all.R
