@@ -1,0 +1,17 @@
+FROM rocker/r-devel
+
+MAINTAINER Winston Chang "winston@rstudio.com"
+
+RUN apt-get install -y \
+    libcurl4-gnutls-dev
+
+RUN Rscript -e "install.packages('devtools'); \
+          update.packages(ask = FALSE)" && \
+    Rscript -e "devtools::install_github('hadley/devtools')"
+
+RUN echo "\nalias R='R --no-save --no-restore-data --quiet'" >> $HOME/.bashrc && \
+    echo "R_LIBS_USER=~/R-lib/%v" > $HOME/.Renviron && \
+    mkdir -p $HOME/R-lib/3.1 $HOME/R-lib/3.2
+
+# Can't use $HOME with COPY for some reason
+COPY Rprofile /root/.Rprofile
