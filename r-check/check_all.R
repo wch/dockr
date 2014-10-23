@@ -140,6 +140,24 @@ collect <- function(results, outdir = "/root/results") {
 }
 
 
+# Clean up the revdep check result directories, removing source packages, built
+# packages, and test directories
+clean_revdep_results <- function(path) {
+  clean_checkdir <- function(path) {
+    pkgname <- sub("\\.Rcheck$", "", basename(path))
+    unlink(file.path(path, pkgname), recursive = TRUE)
+    unlink(file.path(path, "00_pkg_src"), recursive = TRUE)
+    unlink(file.path(path, "tests"), recursive = TRUE)
+  }
+
+  checkdirs <- dir(path, pattern = "*.Rcheck", full.names = TRUE)
+
+  invisible(lapply(checkdirs, clean_checkdir))
+}
+
+
 results <- check_all(get_args()[1])
+
+clean_revdep_results(results$revdep$path)
 
 collect(results)
