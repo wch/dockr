@@ -1,7 +1,7 @@
 #!/usr/bin/Rscript
 
 # Usage:
-# To check a package from Github that's in the wch/R6 repository, you would run:
+# To check a package from Github thats in the wch/R6 repository, you would run:
 # Rscript check_all.R wch/R6
 
 # Need this because Rscript doesn't load methods, and it's needed for roxygen2.
@@ -55,7 +55,6 @@ rdc <- function(pkg, ...) {
     "ndtv", "msm",
     "BEQI2", # not necessarily slow by itself, but it may want some X11 interaction
     "Rglpk"  # Can't compile this one - needs GLPK library?
-    , "dplyr", "shiny"
   )
 
   start_time <- Sys.time()
@@ -123,8 +122,8 @@ check_all <- function(repo, ref = "master") {
 
 # Collect the results
 collect <- function(results, outdir = "/root/results") {
-  outdir <- file.path(outdir,
-      paste0(results$pkg$name, "-", format(Sys.time(), "%Y-%m-%d-%H-%M-%S")))
+  hostname <- system2('hostname', stdout = TRUE)
+  outdir <- file.path(outdir, hostname)
   dir.create(outdir, showWarnings = FALSE, recursive = TRUE)
 
   file.copy(from = results$pkg$path, to = outdir, recursive = TRUE)
