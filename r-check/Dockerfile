@@ -15,3 +15,7 @@ RUN echo "\nalias R='R --no-save --no-restore-data --quiet'" >> $HOME/.bashrc &&
 
 # Can't use $HOME with COPY for some reason
 COPY check_all.R /root/check_all.R
+
+# Temporary workaround for bug in rocker/R-devel:
+# https://github.com/rocker-org/rocker/issues/53
+RUN echo 'options("repos"="http://cran.rstudio.com")' >> /usr/local/lib/R/etc/Rprofile.site
