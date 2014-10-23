@@ -6,6 +6,7 @@
 
 # Need this because Rscript doesn't load methods, and it's needed for roxygen2.
 library(methods)
+library(devtools)
 
 # Find number of cores (Linux only)
 options(Ncpus = as.integer(system2("nproc", stdout = TRUE)))
@@ -20,31 +21,6 @@ get_args <- function() {
   args[arg_idx]
 }
 
-
-# Exclude some super-slow packages
-ignore <- c(
-  "PopGenReport", "mizer", "EpiModel", "caret", "phylosim", "icd9", "NMF",
-  "ndtv", "msm",
-  "BEQI2", # not necessarily slow by itself, but it may want some X11 interaction
-  "Rglpk"  # Can't compile this one - needs GLPK library?
-)
-
-# Wrapper for revdep_check. Reports time and sends a pushbullet message.
-rdc <- function(pkg, ...) {
-  start_time <- Sys.time()
-  res <- devtools::revdep_check(pkg, libpath = .libPaths()[1], ignore = ignore,
-																threads = getOption('Ncpus'), ...)
-  end_time <- Sys.time()
-
-  cat(paste("revdep_check for", pkg, "finished in",
-    round(difftime(end_time, start_time, units = "secs")), "seconds.\n"))
-
-  # if (require(RPushbullet)) {
-  #   pbPost("note", paste("Revdep check for", pkg, "finished."))
-  # }
-
-  res
-}
 
 # Get env vars by running this
 showvars <- function(res) {
@@ -71,6 +47,33 @@ showvars <- function(res) {
 }
 
 
+# Wrapper for revdep_check. Reports time and sends a pushbullet message.
+rdc <- function(pkg, ...) {
+  # Exclude some super-slow packages
+  ignore <- c(
+    "PopGenReport", "mizer", "EpiModel", "caret", "phylosim", "icd9", "NMF",
+    "ndtv", "msm",
+    "BEQI2", # not necessarily slow by itself, but it may want some X11 interaction
+    "Rglpk"  # Can't compile this one - needs GLPK library?
+    , "dplyr", "shiny"
+  )
+
+  start_time <- Sys.time()
+  res <- devtools::revdep_check(pkg, libpath = .libPaths()[1], ignore = ignore,
+                     threads = getOption('Ncpus'), ...)
+  end_time <- Sys.time()
+
+  cat(paste("revdep_check for", pkg, "finished in",
+    round(difftime(end_time, start_time, units = "secs")), "seconds.\n"))
+
+  # if (require(RPushbullet)) {
+  #   pbPost("note", paste("Revdep check for", pkg, "finished."))
+  # }
+
+  res
+}
+
+
 # Fetch source package, unzip, and return list with package name and path
 # Derived from devtools:::install_remote
 fetch_source_github <- function(repo, ref = "master") {
@@ -92,23 +95,52 @@ environment(fetch_source_github) <- asNamespace("devtools")
 # Given a repo name, like "hadley/dplyr", download, install, check, and run
 # revdep checks.
 check_all <- function(repo, ref = "master") {
-  library(devtools)
   pkg <- fetch_source_github(repo, ref = ref)
 
   install_deps(pkg$path, dependencies = TRUE)
 
   # Run check
   check_dir <- tempdir()
-  check_res <- check(pkg$path, cleanup = FALSE, check_dir = check_dir,
-                     document = FALSE)
+  res <- list(
+    name = pkg$name,
+    path = file.path(check_dir, paste0(pkg$name, ".Rcheck"))
+  )
+  res$result <- check(pkg$path, cleanup = FALSE, check_dir = check_dir,
+                      document = FALSE)
 
-  if (!isTRUE(check_res)) {
-    return(FALSE)
+
+  # If package check failed, don't bother with revdeps
+  if (!isTRUE(res$result)) {
+    list(pkg = pkg, revdep = NULL)
   }
 
-  install(pkg$path)
-  rd_res <- revdep_check(pkg$name)
+  # Rev dep check
+  rd_res <- rdc(pkg$name)
+
+  # Results from check and revdep check
+  list(pkg = res, revdep = rd_res)
+}
+
+# Collect the results
+collect <- function(results, outdir = "/root/results") {
+  outdir <- file.path(outdir,
+      paste0(results$pkg$name, "-", format(Sys.time(), "%Y-%m-%d-%H-%M-%S")))
+  dir.create(outdir, showWarnings = FALSE, recursive = TRUE)
+
+  file.copy(from = results$pkg$path, to = outdir, recursive = TRUE)
+  file.rename(
+    file.path(outdir, basename(results$pkg$path)),
+    file.path(outdir, "check")
+  )
+
+  file.copy(from = results$revdep$path, to = outdir, recursive = TRUE)
+  file.rename(
+    file.path(outdir, basename(results$revdep$path)),
+    file.path(outdir, "revdep")
+  )
 }
 
 
-check_all(get_args()[1])
+results <- check_all(get_args()[1])
+
+collect(results)
