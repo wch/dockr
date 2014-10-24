@@ -4,14 +4,14 @@
 # To check a package from Github thats in the wch/R6 repository, you would run:
 # Rscript check_all.R wch/R6
 
-# Need this because Rscript doesn't load methods, and it's needed for roxygen2.
-library(methods)
-library(devtools)
-
 # Find number of cores (Linux only)
 options(Ncpus = as.integer(system2("nproc", stdout = TRUE)))
 
 update.packages(ask = FALSE)
+
+# Need this because Rscript doesn't load methods, and it's needed for roxygen2.
+library(methods)
+library(devtools)
 
 # Get command line args after "--args" (for use with Rscript)
 get_args <- function() {
