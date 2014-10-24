@@ -5,7 +5,9 @@ MAINTAINER Winston Chang "winston@rstudio.com"
 RUN apt-get install -y \
     libcurl4-gnutls-dev \
     libpq-dev \
-    libmysqlclient-dev
+    libmysqlclient-dev \
+    pandoc \
+    pandoc-citeproc
 
 # Temporary workaround for bug in rocker/R-devel:
 # https://github.com/rocker-org/rocker/issues/53
@@ -14,13 +16,12 @@ RUN echo 'options("repos"="http://cran.rstudio.com")' >> /usr/local/lib/R/etc/Rp
 # Temporary workaround related to shared libpath problem:
 # https://github.com/rocker-org/rocker/issues/54
 RUN mkdir /usr/local/lib/R/site-library-devel && \
-    echo "R_LIBS_SITE=\${R_LIBS_SITE-'/usr/local/lib/R/site-library-devel:/usr/local/lib/R/library'}" \
-    > /usr/local/lib/R/etc/Renviron.site
+    echo "R_LIBS_SITE=\${R_LIBS_SITE-'/usr/local/lib/R/site-library-devel:/usr/local/lib/R/library:/usr/lib/R/library'}" \ > /usr/local/lib/R/etc/Renviron.site
 
 RUN Rscript -e "install.packages('devtools'); update.packages(ask = FALSE)" && \
     Rscript -e "devtools::install_github('hadley/devtools')"
 
-RUN Rscriptdevel -e "install.packages('devtools'); update.packages(ask = FALSE)" && \
+RUN Rscriptdevel -e "install.packages(c('devtools', 'rmarkdown'))" && \
     Rscriptdevel -e "devtools::install_github('hadley/devtools')"
 
 RUN echo "\nalias R='R --no-save --no-restore-data --quiet'" >> $HOME/.bashrc && \
