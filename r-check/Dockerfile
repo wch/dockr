@@ -3,7 +3,9 @@ FROM rocker/r-devel
 MAINTAINER Winston Chang "winston@rstudio.com"
 
 RUN apt-get install -y \
-    libcurl4-gnutls-dev
+    libcurl4-gnutls-dev \
+    libpq-dev \
+    libmysqlclient-dev
 
 RUN Rscript -e "install.packages('devtools'); \
           update.packages(ask = FALSE)" && \
