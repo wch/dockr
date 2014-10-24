@@ -22,31 +22,6 @@ get_args <- function() {
 }
 
 
-# Get env vars by running this
-showvars <- function(res) {
-  pkg <- res$revdep_package
-  desc <- packageDescription(pkg)
-  rstatus <- if (grepl("devel", R.version$status)) "r-devel" else "r-release"
-
-  pkgversion <- desc$Version
-  if (!is.null(desc$GithubSHA1))
-    pkgversion <- paste0(pkgversion, " (", substr(desc$GithubSHA1, 1, 7), ")")
-
-  sprintf('
-    RVERSION=%s.%s
-    RSTATUS=%s
-    RPKG=%s
-    RPKGVERSION="%s"
-    CHECKDIR="%s"\n',
-    R.version$major, R.version$minor,
-    rstatus,
-    pkg,
-    pkgversion,
-    file.path(res$path, "results")
-  )
-}
-
-
 # Wrapper for revdep_check. Reports time and sends a pushbullet message.
 rdc <- function(pkg, ...) {
   # Exclude some super-slow packages
@@ -120,11 +95,36 @@ check_all <- function(repo, ref = "master") {
   list(pkg = res, revdep = rd_res)
 }
 
+write_package_info <- function(pkgname, file) {
+  if (missing(file)) stop("Need filename")
+
+  desc <- packageDescription(pkgname)
+
+  pkgversion <- desc$Version
+  if (!is.null(desc$GithubSHA1))
+    pkgversion <- paste0(pkgversion, " (", substr(desc$GithubSHA1, 1, 7), ")")
+
+  write.dcf(
+    list(
+      package = pkgname,
+      pkgversion = pkgversion,
+      rversion = paste(R.version$major, R.version$minor, sep = "."),
+      rstatus = if (grepl("devel", R.version$status)) "r-devel" else "r-release"
+    ),
+    file = file
+  )
+}
+
 # Collect the results
-collect <- function(results, outdir = "/root/results") {
+collect <- function(results, outdir) {
+  if (missing(outdir)) stop("Output directory must be specified")
+
   hostname <- system2('hostname', stdout = TRUE)
   outdir <- file.path(outdir, hostname)
   dir.create(outdir, showWarnings = FALSE, recursive = TRUE)
+
+  # Record package and R version information
+  write_package_info(results$pkg$name, file.path(outdir, "INFO"))
 
   file.copy(from = results$pkg$path, to = outdir, recursive = TRUE)
   file.rename(
@@ -160,4 +160,4 @@ results <- check_all(get_args()[1])
 
 clean_revdep_results(results$revdep$path)
 
-collect(results)
+collect(results, "/root/results")
