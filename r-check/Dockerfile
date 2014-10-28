@@ -10,14 +10,11 @@ RUN apt-get install -y \
     pandoc \
     pandoc-citeproc
 
-# Temporary workaround for bug in rocker/R-devel:
-# https://github.com/rocker-org/rocker/issues/53
-RUN echo 'options("repos"="http://cran.rstudio.com")' >> /usr/local/lib/R/etc/Rprofile.site
-
-# Temporary workaround related to shared libpath problem:
+# Temporary workaround related to libpath problems:
 # https://github.com/rocker-org/rocker/issues/54
+# https://github.com/rocker-org/rocker/issues/67
 RUN mkdir /usr/local/lib/R/site-library-devel && \
-    echo "R_LIBS_SITE=\${R_LIBS_SITE-'/usr/local/lib/R/site-library-devel:/usr/local/lib/R/library:/usr/lib/R/library'}" \ > /usr/local/lib/R/etc/Renviron.site
+    echo "R_LIBS=\${R_LIBS-'/usr/local/lib/R/site-library-devel:/usr/local/lib/R/library:/usr/lib/R/library'}" \ >> /usr/local/lib/R/etc/Renviron
 
 RUN Rscript -e "install.packages('devtools'); update.packages(ask = FALSE)" && \
     Rscript -e "devtools::install_github('hadley/devtools')"
