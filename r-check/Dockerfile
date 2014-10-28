@@ -19,11 +19,11 @@ RUN mkdir /usr/local/lib/R/site-library-devel && \
 RUN Rscript -e "install.packages('devtools'); update.packages(ask = FALSE)" && \
     Rscript -e "devtools::install_github('hadley/devtools')"
 
-RUN Rscriptdevel -e "install.packages(c('devtools', 'rmarkdown'))" && \
-    Rscriptdevel -e "devtools::install_github('hadley/devtools')"
+RUN RDscript -e "install.packages(c('devtools', 'rmarkdown'))" && \
+    RDscript -e "devtools::install_github('hadley/devtools')"
 
 RUN echo "\nalias R='R --no-save --no-restore-data --quiet'" >> $HOME/.bashrc && \
-    echo "\nalias Rdevel='Rdevel --no-save --no-restore-data --quiet'" >> $HOME/.bashrc && \
+    echo "\nalias RD='RD --no-save --no-restore-data --quiet'" >> $HOME/.bashrc && \
     echo "R_LIBS_USER=~/R-lib/%v" > $HOME/.Renviron && \
     mkdir -p $HOME/R-lib/3.1 $HOME/R-lib/3.2
 
