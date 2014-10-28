@@ -14,7 +14,7 @@ RUN apt-get update && apt-get install -y \
 # https://github.com/rocker-org/rocker/issues/54
 # https://github.com/rocker-org/rocker/issues/67
 RUN mkdir /usr/local/lib/R/site-library-devel && \
-    echo "R_LIBS=\${R_LIBS-'/usr/local/lib/R/site-library-devel:/usr/local/lib/R/library:/usr/lib/R/library'}" \
+    echo "R_LIBS_SITE=\${R_LIBS_SITE-'/usr/local/lib/R/site-library-devel:/usr/local/lib/R/library:/usr/lib/R/library'}" \
     >> /usr/local/lib/R/etc/Renviron && \
     rm /usr/local/lib/R/etc/Renviron.site
 
