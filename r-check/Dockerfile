@@ -5,6 +5,7 @@ MAINTAINER Winston Chang "winston@rstudio.com"
 RUN apt-get update && apt-get install -y \
     git \
     libcurl4-gnutls-dev \
+    libxml2-dev \
     libpq-dev \
     libmysqlclient-dev \
     pandoc \
