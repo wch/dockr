@@ -1,4 +1,4 @@
-FROM rocker/r-base
+FROM r-base:latest
 
 MAINTAINER Winston Chang "winston@rstudio.com"
 
