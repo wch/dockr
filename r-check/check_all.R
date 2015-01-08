@@ -23,7 +23,7 @@ get_args <- function() {
 
 
 # Wrapper for revdep_check. Reports time and sends a pushbullet message.
-rdc <- function(pkg, ...) {
+rdc <- function(path, ...) {
   # Exclude some super-slow packages
   ignore <- c(
     "PopGenReport", "mizer", "EpiModel", "caret", "phylosim", "icd9", "NMF",
@@ -33,11 +33,11 @@ rdc <- function(pkg, ...) {
   )
 
   start_time <- Sys.time()
-  res <- devtools::revdep_check(pkg, libpath = .libPaths()[1], ignore = ignore,
+  res <- devtools::revdep_check(path, libpath = .libPaths()[1], ignore = ignore,
                      threads = getOption('Ncpus'), ...)
   end_time <- Sys.time()
 
-  cat(paste("revdep_check for", pkg, "finished in",
+  cat(paste("revdep_check of", path, "finished in",
     round(difftime(end_time, start_time, units = "secs")), "seconds.\n"))
 
   # if (require(RPushbullet)) {
@@ -89,7 +89,7 @@ check_all <- function(repo, ref = "master") {
   }
 
   # Rev dep check
-  rd_res <- rdc(pkg$name)
+  rd_res <- rdc(pkg$path)
 
   # Results from check and revdep check
   list(pkg = res, revdep = rd_res)
